@@ -49,7 +49,7 @@ I start by preparing "object points", which will be the (x, y, z) coordinates of
 
 ![alt text][image1]
 
-I then used the output `objp_list` and `imgp_list` to compute the camera calibration and distortion coefficients using the `cv2.calibrateCamera()` function.  I applied this distortion correction to the test image using the `cv2.undistort()` function and obtained this result(Please refer to the 5th and 6th code cell of P2.ipynb): 
+I then used the output `objp_list` and `imgp_list` to compute the camera calibration and distortion coefficients using the `cv2.calibrateCamera()` function.  I applied this distortion correction to the test image using the `cv2.undistort()` function and obtained this result(Please refer to the 5th and 6th code cell of P2.ipynb):
 
 ![alt text][image2]
 ![alt text][image3]
@@ -66,7 +66,7 @@ Using the `cv2.calibrateCamera()` functionto compute the camera calibration and 
 
 #### 2. Describe how (and identify where in your code) you used color transforms, gradients or other methods to create a thresholded binary image.  Provide an example of a binary image result.
 
-I used a combination of color and gradient thresholds to generate a binary image (thresholding steps at 7th and 8th code cells in `P2.ipynb`, I use the HLS color space and sobel operator).  Here's an example of my output for this step. 
+I used a combination of LUV colorspace and LAB colorspace to generate a binary image (thresholding steps at 7th and 8th code cells in `P2.ipynb`). The L channel from LUV with lower and upper thresholds around 225 & 255 respectively works very well to pick out the white lines, even in the parts of the video with heavy shadows and brighter pavement. And the b channel from Lab which does a great job with the yellow lines (you can play around with thresholds around 155 & 200). Here's an example of my output for this step.
 
 ![alt text][image4]
 
@@ -81,9 +81,9 @@ dst_points = np.float32([[200,720],[200,0],[1080,0],[1080,720]])
 
 This resulted in the following source and destination points:
 
-| Source        | Destination   | 
-|:-------------:|:-------------:| 
-| 190, 720      | 200, 720        | 
+| Source        | Destination   |
+|:-------------:|:-------------:|
+| 190, 720      | 200, 720        |
 | 578, 460      | 200, 0      |
 | 706, 460     | 1080, 720      |
 | 1130,720      | 1080, 720        |
@@ -110,18 +110,18 @@ I assume the camera is mounted at the center of the car, such that the lane cent
 # Define conversions in x and y from pixels space to meters
 ym_per_pix = 30/720 # meters per pixel in y dimension
 xm_per_pix = 3.7/880 # meters per pixel in x dimension
-
 # determine the curvature of the lane in real world (unit: m)
-def measure_curvature_real(left_fit_cr, right_fit_cr, ploty):
+def measure_curvature_real(left_fit_cr, right_fit_cr, ploty,ym_per_pix = 30/720):
     # Calculates the curvature of polynomial functions in meters.
     # Define y-value where we want radius of curvature
     # We'll choose the maximum y-value, corresponding to the bottom of the image
-    y_eval = np.max(ploty)
-    
+    ploty_cr = ploty * ym_per_pix
+    y_eval = np.max(ploty_cr)
+
     # Implement the calculation of R_curve (radius of curvature)
-    left_curverad = (1+(2*left_fit_cr[0]*y_eval + left_fit_cr[1])**2)**(1.5) /np.absolute(2*left_fit_cr[0]) 
+    left_curverad = (1+(2*left_fit_cr[0]*y_eval + left_fit_cr[1])**2)**(1.5) /np.absolute(2*left_fit_cr[0])
     right_curverad = (1+(2*right_fit_cr[0]*y_eval + right_fit_cr[1])**2)**(1.5) / np.absolute(2*right_fit_cr[0])
-    
+
     return left_curverad, right_curverad
 
 def measure_offset_to_center(ploty, left_fit, right_fit, xm_per_pix = 3.7/880):
